@@ -1,4 +1,4 @@
-use std::{io::stdin, process::ExitCode};
+use std::{env, io::stdin, process::ExitCode};
 
 use structures::structures::{Dictionnary, HangmanGame};
 
@@ -7,14 +7,37 @@ pub mod structures;
 const MAX_ATTEMPT_NUMBER: i32 = 11;
 
 fn main() -> ExitCode {
+    // Prise en compte du nom du fichier dictionnaire au format txt
+    let mut dico_file_path = "dico.txt".to_string(); // fichier par défaut
+
+    // Prise en compte du nombre de lettres minimum que le mot à deviner doit contenir.
+    let mut min_words_length = Option::<u8>::None;
+
+    for argument in env::args() {
+        if argument.starts_with("--dico=") {
+           dico_file_path = argument.replace("--dico=", ""); 
+        }
+
+        if argument.starts_with("--words-min-length=") {
+            let min_length: Result<u8, _> = argument.replace("--words-min-length=", "").parse();
+            if min_length.is_ok() {
+                min_words_length = min_length.ok() ;
+            }
+        }
+    }
+
     // Charger le dictionnaire
-    let dico = Dictionnary::load_from_file_path("./dico.txt".to_string());
-    if dico.is_err() {
-        println!("Une erreur est survenue : {}", dico.err().unwrap());
+    let mut dico = Dictionnary::new();
+    if min_words_length.is_some() {
+        dico = dico.with_min_words_length(min_words_length.unwrap());
+    }
+    let dico_load_result = dico.load_from_file_path(dico_file_path);
+    if dico_load_result.is_err() {
+        println!("Une erreur est survenue : {}", dico_load_result.err().unwrap());
         return ExitCode::FAILURE;
     }
 
-    let dico = dico.unwrap();
+    let dico = dico_load_result.unwrap();
     // pour debug
     // dico.print();
     

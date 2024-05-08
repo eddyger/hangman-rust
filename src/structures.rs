@@ -6,28 +6,46 @@ pub mod structures {
 
     pub struct Dictionnary {
         pub liste:Vec<Word>,
+        pub min_words_length:u8,
     }
 
     impl Dictionnary {
-        pub fn load_from_file_path(file_path:String) -> Result<Self, Error> {
+        pub fn load_from_file_path(&mut self, file_path:String) -> Result<&mut Self, Error> {
+            println!("Chargement du fichier : [{}] ...", file_path);
             // Open the file and handle the result with the ? operator
             let file = fs::File::open(file_path)?;
 
-            // Create a new instance of Dictionnary with an empty vector
-            let mut dictionnary = Dictionnary {
-                liste: Default::default(),
-            };
-
             // fill the dictionnary
             let reader = BufReader::new(file);
-
+            let mut loaded_words = 0;
             for line in reader.lines() {
                 let line = line?;
-                dictionnary.liste.push(Word(line));
+                if line.len() >= self.min_words_length.into() {
+                    self.liste.push(Word(line.to_string()));
+                    loaded_words += 1;
+                    println!("Add {} , {} car",line.to_string(), line.len());
+                }
             }
 
-            Ok(dictionnary)
+            println!("Nombre de mots chargés: [{}]", loaded_words);
+
+            Ok(self)
             
+        }
+
+        pub fn new() -> Self {
+             // Create a new instance of Dictionnary with an empty vector
+            let dictionnary = Dictionnary {
+                liste: Default::default(),
+                min_words_length: 5
+            };
+
+            dictionnary
+        }
+
+        pub fn with_min_words_length(mut self,min_words_length:u8) -> Self {
+            self.min_words_length = min_words_length;
+            self
         }
 
         pub fn pick_random_word(&self) -> &Word{
