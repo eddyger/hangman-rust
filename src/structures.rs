@@ -10,7 +10,7 @@ pub mod structures {
     }
 
     impl Dictionnary {
-        pub fn load_from_file_path(&mut self, file_path:String) -> Result<&mut Self, Error> {
+        pub fn load_from_file_path(&mut self, file_path:String) -> Result<(), Error> {
             println!("Chargement du fichier : [{}] ...", file_path);
             // Open the file and handle the result with the ? operator
             let file = fs::File::open(file_path)?;
@@ -23,13 +23,13 @@ pub mod structures {
                 if line.len() >= self.min_words_length.into() {
                     self.liste.push(Word(line.to_string()));
                     loaded_words += 1;
-                    println!("Add {} , {} car",line.to_string(), line.len());
+                    // println!("Add {} , {} car",line.to_string(), line.len());
                 }
             }
 
             println!("Nombre de mots chargés: [{}]", loaded_words);
 
-            Ok(self)
+            Ok(())
             
         }
 
@@ -43,9 +43,8 @@ pub mod structures {
             dictionnary
         }
 
-        pub fn with_min_words_length(mut self,min_words_length:u8) -> Self {
+        pub fn with_min_words_length(&mut self,min_words_length:u8) {
             self.min_words_length = min_words_length;
-            self
         }
 
         pub fn pick_random_word(&self) -> &Word{
@@ -118,7 +117,8 @@ pub mod structures {
 
     pub struct HangmanGame<'a>{
         pub word_to_found:&'a Word,
-        pub found_letters:Vec<char>
+        pub found_letters:Vec<char>,
+        pub already_entered_chars:Vec<char>
     }
 
     impl<'a> HangmanGame<'a> {
@@ -132,12 +132,40 @@ pub mod structures {
                 }
                 obsfu_word.push(' ');
             }
-            obsfu_word.to_uppercase()
+            obsfu_word.to_uppercase().trim().to_owned()
         }
 
         pub fn get_word(&self) -> String{
             (*self.word_to_found.0).to_string().to_uppercase()
         }
+
+        pub fn new(word:&'a Word) -> Self {
+            HangmanGame{
+                word_to_found: word,
+                found_letters: Vec::<char>::new(),
+                already_entered_chars: Vec::<char>::new(),
+            }
+        }
+
+        pub fn save_entered_char(&mut self,c:char){
+            self.already_entered_chars.push(c);
+        }
+
+        pub fn has_already_entered_char(&self,c:char) -> bool{
+            self.already_entered_chars.contains(&c)
+        }
+
+        pub fn get_already_entered_chars(&self) -> String {
+            let mut history = String::new();
+            for l in &self.already_entered_chars {
+                if history.chars().count() > 0 {
+                    history.push(',');
+                }
+                history.push(*l);
+            }
+            history.to_uppercase().trim().to_owned()
+        }
+
     }
 
 
