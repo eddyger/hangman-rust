@@ -39,7 +39,29 @@ fn main() -> ExitCode {
 
     // pour debug
     // dico.print();
+    'play: loop {
+        play(&dico);
+        'replay: loop {
+            let mut player_input = String::new();
+            println!("Voulez-vous rejouer ? ((O)ui/(N)on) ");
+            let result = stdin().read_line(&mut player_input);
+            if result.is_ok() {
+                let response = player_input.trim_end();
+                if response.to_uppercase() == "N" {
+                    break 'play;
+                } else if response.to_uppercase() == "O" {
+                    break 'replay;
+                }
+                println!("Je n'ai pas compris votre réponse");
+            }
+        } 
+    }
     
+    
+    ExitCode::SUCCESS
+}
+
+fn play(dico: &Dictionnary){
     // choisir un mot dans le dictionnaire
     let word = dico.pick_random_word();
     
@@ -56,11 +78,7 @@ fn main() -> ExitCode {
         let result = stdin().read_line(&mut player_input);
         if result.is_ok() {
             let letter = player_input.trim_end();
-            let mut ordinal_number = 0;
-            if letter.chars().last().is_some() {
-                ordinal_number = letter.chars().last().unwrap() as u32;
-            }
-            if !(( ordinal_number >= 97 && ordinal_number <= 122) || (ordinal_number >= 65 && ordinal_number <= 90)) {
+            if !hang_man_game.is_char_allowed(letter) {
                println!("Mauvaise saisie....! [{}]",letter); 
             }else{
                let entered_char = letter.chars().take(1).next().unwrap().to_lowercase().last().unwrap();
@@ -103,5 +121,4 @@ fn main() -> ExitCode {
         }
     }
 
-    ExitCode::SUCCESS
 }

@@ -21,7 +21,7 @@ pub mod structures {
             for line in reader.lines() {
                 let line = line?;
                 if line.len() >= self.min_words_length.into() {
-                    self.liste.push(Word(line.to_string()));
+                    self.liste.push(Word(line.to_string())); // TODO transformer les caractères accentués en leur équivalent
                     loaded_words += 1;
                     // println!("Add {} , {} car",line.to_string(), line.len());
                 }
@@ -164,6 +164,19 @@ pub mod structures {
                 history.push(*l);
             }
             history.to_uppercase().trim().to_owned()
+        }
+
+        pub fn is_char_allowed(&self,letter:&str) -> bool {
+            // Check if the input string has exactly one character
+            if letter.len() == 1 {
+                // Get the first and only character of the string
+                let char_code = letter.chars().next().unwrap() as u32;
+        
+                // Check if the character code falls within the allowed range
+                return (char_code >= 97 && char_code <= 122) || (char_code >= 65 && char_code <= 90)
+            } 
+            // Return false if the input string is empty or has more than one character
+            false
         }
 
     }
