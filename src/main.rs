@@ -1,8 +1,12 @@
 use std::{env, io::stdin, process::ExitCode};
 
-use structures::structures::{Dictionnary, HangmanGame};
+use definition_service::Definition;
+use structures::{Dictionnary, HangmanGame};
+
+use crate::structures::Word;
 
 pub mod structures;
+pub mod definition_service;
 
 const MAX_ATTEMPT_NUMBER: i32 = 11;
 
@@ -68,8 +72,8 @@ fn play(dico: &Dictionnary){
     let mut letters_found: usize = 0;
     let mut attempt_number = 0;
     let mut hang_man_game = HangmanGame::new(word);
+    let mut has_won = false;
     // boucler tant que mot pas trouvé et nombre de tentative non atteint
-    // TODO: new game
     loop {
         let mut player_input = String::new();
         println!("Le mot -> [{}]",hang_man_game.get_obfuscated_word());
@@ -94,8 +98,7 @@ fn play(dico: &Dictionnary){
 
                     letters_found += number_found_in_word;
                     if letters_found == word.len(){
-                        println!("Gagné !");
-                        println!("Le mot -> [{}]",hang_man_game.get_obfuscated_word());
+                        has_won = true;
                         break;
                     }
                     
@@ -107,8 +110,6 @@ fn play(dico: &Dictionnary){
                     hang_man_game.save_entered_char(entered_char);
                     
                     if attempt_number >= MAX_ATTEMPT_NUMBER {
-                        println!("PERDU !");
-                        println!("Le mot -> [{}]",hang_man_game.get_word());
                         break;
                     }
                
@@ -116,9 +117,29 @@ fn play(dico: &Dictionnary){
                     println!("hummm...lettre déjà saisie...");  
                }
             }
-
-            // TODO: interroger une api distante pour obtenir la définition.
         }
     }
+    let message = if has_won {
+        "Vous avez gagné !"
+    }else{
+        "Vous avez perdu !"
+    };
+    println!("{}", message);
+    println!("Le mot -> [{}]",hang_man_game.get_word());
 
+    let mut player_input = String::new();
+    println!("Voulez-vous voir la définition ? ((O)ui/(N)on) ");
+    let result = stdin().read_line(&mut player_input);
+    if result.is_ok() {
+        let response = player_input.trim_end();
+        if response.to_uppercase() == "O" {
+            let defintion_service = Definition{};
+            let response = defintion_service.get_word_definition(word.to_string());
+            if response.is_ok() {
+                println!("{}", response.unwrap());
+            }else{
+                println!("{}", response.err().unwrap());
+            }
+        }
+    }
 }
