@@ -3,8 +3,6 @@ use std::{env, io::stdin, process::ExitCode};
 use definition_service::Definition;
 use structures::{Dictionnary, HangmanGame};
 
-use crate::structures::Word;
-
 pub mod structures;
 pub mod definition_service;
 

@@ -20,7 +20,7 @@ impl Dictionnary {
         for line in reader.lines() {
             let line = line?;
             if line.len() >= self.min_words_length.into() {
-                self.liste.push(Word(line.to_string())); // TODO transformer les caractères accentués en leur équivalent
+                self.liste.push(Word::new(line.to_string())); // We keep accented words
                 loaded_words += 1;
                 // println!("Add {} , {} car",line.to_string(), line.len());
             }
@@ -58,36 +58,10 @@ impl Dictionnary {
             println!("{}", word);
         }
     }
+    
 }
 
 pub struct Word(pub String);
-
-/* 
-pub struct CountLetter{
-    count: usize,
-    positions: Vec<usize>
-}
-
-impl Word {
-    pub fn count_letter(&self, l:char) -> CountLetter{
-        let mut position = 0;
-        let mut cl = CountLetter{count:0, positions:Vec::<usize>::new()};
-        for c in self.0.chars() {
-            if c == l {
-                cl.count += 1;
-                cl.positions.push(position);
-
-            } 
-            position += 1;
-        }
-        cl
-    }
-
-    pub fn len(&self) -> usize {
-        self.0.len()
-    }
-}
-*/
 
 impl Display for Word {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -99,7 +73,7 @@ impl Word {
     pub fn count_letter(&self, l:char) -> usize{
         let mut count = 0;
         let llc = l.to_lowercase().last().unwrap(); // On transforme la lettre en minuscule
-        for c in self.0.chars() {
+        for c in self.replace_accent().chars() {
             if c.to_lowercase().last().unwrap() == llc {
                 count += 1;
 
@@ -109,8 +83,44 @@ impl Word {
     }
 
     pub fn len(&self) -> usize {
-        self.0.len()
+        let mut str = self.replace_accent();
+        for c in Word::non_counting_chars() {
+            str = str.replace(c, "");
+        }
+        str.len()
     }
+
+    fn replace_accent(&self) -> String {
+        self.0.replace("é", "e")
+            .replace("è", "e")
+            .replace("ê", "e")
+            .replace("à", "a")
+            .replace("â", "a")
+            .replace("ù", "u")
+            .replace("û", "u")
+            .replace("ç", "c")
+            .replace("î", "i")
+            .replace("ô", "o")
+            .replace("ë", "e")
+            .replace("ï", "i")
+            .replace("ü", "u")
+            .replace("ö", "o")
+            .replace("ä", "a")
+            .replace("ÿ", "y")
+            .replace("œ", "oe")
+            .replace("æ", "ae")
+    }
+
+    fn non_counting_chars () -> Vec<char> {
+        let mut chars = Vec::<char>::new();
+        chars.push('-');
+        chars
+    }
+
+    pub fn new(word: String) -> Self {
+        Word(word)
+    }
+
 }
 
 
@@ -123,8 +133,8 @@ pub struct HangmanGame<'a>{
 impl<'a> HangmanGame<'a> {
     pub fn get_obfuscated_word(&self) -> String{
         let mut obsfu_word = String::new();
-        for l in self.word_to_found.0.chars(){
-            if self.found_letters.contains(&l) {
+        for l in self.word_to_found.replace_accent().chars(){
+            if self.found_letters.contains(&l) || Word::non_counting_chars().contains(&l) {
                 obsfu_word.push(l);
             }else{
                 obsfu_word.push('*');
