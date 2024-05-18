@@ -29,13 +29,8 @@ impl Definition {
         let definitions = div_content_element.find(Name("ol")).next();
         if definitions.is_some(){
             let definitions = definitions.unwrap().find(Name("li"));
-            let mut definitions_vec = Vec::<String>::new();
             for definition in definitions {
-                definitions_vec.push(definition.text());
-            }
-
-            for i in 0..=definitions_vec.len()-1 {
-                response.push_str(definitions_vec.get(i).unwrap());
+                response.push_str(&definition.text());
             }
         }
         
